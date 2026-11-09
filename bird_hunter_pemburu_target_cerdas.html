@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BIRD HUNTER – PEMBURU TARGET CERDAS</title>
+<style>
+:root{--ink:#17345b;--blue:#58c8f4;--deep:#1678b8;--yellow:#ffd65a;--green:#47c98b;--pink:#ff83ad}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Trebuchet MS",Arial,sans-serif;color:var(--ink);background:#8fe0ff;overflow-x:hidden}
+button,input{font:inherit}
+button{cursor:pointer;border:0}
+.game{min-height:100vh;position:relative;overflow:hidden;background:linear-gradient(#75d5ff 0%,#b9f0ff 52%,#8edb8b 53%,#54bb78 100%)}
+.sky-decor{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.sun{position:absolute;right:8%;top:7%;width:76px;height:76px;border-radius:50%;background:#ffe77a;box-shadow:0 0 0 12px #ffe77a44,0 0 45px #fff2a8}
+.cloud{position:absolute;width:130px;height:42px;background:#fff;border-radius:50px;opacity:.88;filter:drop-shadow(0 5px 0 #7dcce9)}
+.cloud:before,.cloud:after{content:"";position:absolute;background:inherit;border-radius:50%}
+.cloud:before{width:58px;height:58px;left:20px;top:-24px}.cloud:after{width:72px;height:72px;right:16px;top:-35px}
+.c1{top:13%;left:8%;animation:drift 28s linear infinite}.c2{top:28%;right:12%;transform:scale(.75);animation:drift 35s linear infinite reverse}
+@keyframes drift{50%{translate:55px 0}}
+.tree{position:absolute;bottom:0;width:145px;height:260px;pointer-events:none}
+.tree:before{content:"";position:absolute;bottom:0;left:60px;width:27px;height:145px;background:#95613f;border-radius:15px}
+.tree:after{content:"🌳";position:absolute;bottom:85px;left:0;font-size:125px;filter:drop-shadow(0 5px 0 #277b52)}
+.tree.left{left:-10px}.tree.right{right:-10px;transform:scaleX(-1)}
+.topbar{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px clamp(12px,3vw,28px);background:#ffffffd9;backdrop-filter:blur(8px);box-shadow:0 4px 14px #235c7a22}
+.brand{font-weight:1000;letter-spacing:.4px;font-size:clamp(15px,2vw,22px);color:#146ca4}.brand span{color:#f39a28}
+.stats{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.stat{background:#eaf8ff;border:2px solid #c3eafa;border-radius:14px;padding:7px 12px;font-weight:800;font-size:13px}
+main{position:relative;z-index:2;max-width:1050px;margin:auto;padding:16px 18px 38px}
+.panel{background:#ffffffed;border:3px solid #fff;border-radius:24px;box-shadow:0 12px 30px #235c7a2b;padding:clamp(16px,3vw,28px)}
+.center{text-align:center}.hero{max-width:720px;margin:30px auto}.hero h1{font-size:clamp(30px,6vw,54px);line-height:1.03;margin:8px 0;color:#126da7;text-shadow:2px 3px 0 #c4f0ff}.hero h1 em{font-style:normal;color:#f49a27}.hero p{font-size:17px;line-height:1.5}
+.mascot{font-size:75px;animation:bob 2s ease-in-out infinite}@keyframes bob{50%{transform:translateY(-9px) rotate(4deg)}}
+.name-row{display:flex;gap:10px;max-width:440px;margin:20px auto 12px}.name-row input{min-width:0;flex:1;border:2px solid #b6e3f5;border-radius:14px;padding:13px 15px;outline:none}.name-row input:focus{border-color:#239bd2}
+.btn{background:linear-gradient(180deg,#ffdf6c,#ffb52e);color:#744500;font-weight:900;border-radius:15px;padding:13px 20px;box-shadow:0 5px 0 #db8e1d;transition:.12s;white-space:nowrap}.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #db8e1d}.btn.blue{background:linear-gradient(#63d4f8,#28a9df);box-shadow:0 5px 0 #1685b8;color:white}.btn.green{background:linear-gradient(#72e2a8,#36bd7d);box-shadow:0 5px 0 #229a61;color:#064a30}.btn.small{padding:9px 13px;font-size:13px}
+.instructions{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;color:#3d6682;font-size:13px;font-weight:700;margin-top:16px}
+.hidden{display:none!important}
+.game-panel{margin-top:8px}
+.question-line{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.level-pill{background:#e6f8ed;color:#18734a;border-radius:30px;padding:8px 14px;font-weight:900}
+.progress{height:10px;background:#e3f1f7;border-radius:20px;overflow:hidden;margin:14px 0 18px}.progress>div{height:100%;width:0;background:linear-gradient(90deg,#45c98a,#a8e85b);transition:width .3s}
+.question{font-size:clamp(20px,3.4vw,28px);font-weight:900;text-align:center;margin:10px 0 5px}
+.hint{text-align:center;color:#54748a;font-size:14px;margin:0 0 8px}
+.playfield{height:330px;position:relative;border-radius:20px;overflow:hidden;background:linear-gradient(#9ce5ff,#d7f8ff 72%,#8cda91 72%);border:3px solid #d1f2ff;isolation:isolate}
+.playfield:before{content:"";position:absolute;bottom:0;left:0;right:0;height:65px;background:repeating-linear-gradient(110deg,#68c97c 0 18px,#79d68a 18px 34px);z-index:-1}
+.bird{position:absolute;font-size:clamp(28px,4vw,45px);animation:fly 7s ease-in-out infinite;pointer-events:none;filter:drop-shadow(0 3px 1px #437c5a55)}.bird.b2{animation-delay:-3s;font-size:35px}
+@keyframes fly{0%,100%{transform:translate(0,0)}50%{transform:translate(65px,-23px)}}
+.balloon{position:absolute;min-width:82px;min-height:104px;padding:12px 10px 18px;border-radius:50% 50% 46% 46%;display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;font-size:24px;font-weight:1000;text-shadow:0 2px 2px #0003;border:3px solid #ffffffaa;box-shadow:inset -8px -8px 0 #00000012,0 5px 8px #34617a35;user-select:none;touch-action:manipulation;animation:float 2.4s ease-in-out infinite;transition:transform .15s,opacity .2s;z-index:2}
+.balloon:after{content:"";position:absolute;bottom:-17px;left:50%;width:2px;height:19px;background:#8a9caa;transform:translateX(-50%)}
+.balloon:hover{transform:scale(1.08)}.balloon.popped{transform:scale(1.55) rotate(15deg);opacity:0}
+@keyframes float{50%{translate:0 -9px}}
+.b1{background:#ff719d}.b2c{background:#8a82f4}.b3c{background:#ffae42}.b4c{background:#36bfa6}
+.reticle{position:absolute;z-index:8;width:42px;height:42px;border:3px solid #ff315f;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;display:none;box-shadow:0 0 0 4px #fff9,0 0 14px #ff315f}.reticle:before,.reticle:after{content:"";position:absolute;background:#ff315f}.reticle:before{width:2px;height:58px;left:17px;top:-11px}.reticle:after{height:2px;width:58px;top:17px;left:-11px}
+.feedback{min-height:52px;margin:12px 0 4px;text-align:center;font-weight:800;font-size:16px;color:#26764f}.feedback.bad{color:#b65b22}
+.controls{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+.camera-box{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:14px;background:#f0faff;border-radius:16px;padding:10px}
+.camera-box video{width:150px;height:105px;object-fit:cover;transform:scaleX(-1);border-radius:12px;background:#dceef5}
+.camera-status{font-size:13px;color:#41677e;max-width:360px}
+.levels{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin:14px 0}.level-dot{border-radius:50px;padding:7px 11px;background:#e8f0f5;color:#688092;font-size:12px;font-weight:900}.level-dot.done{background:#d8f7e5;color:#18764b}.level-dot.current{background:#ffe8a5;color:#865b00}
+.result-emoji{font-size:78px}.result-score{font-size:42px;color:#1688ba;font-weight:1000}
+@media(max-width:600px){.topbar{align-items:flex-start;flex-direction:column}.stats{justify-content:flex-start}.playfield{height:360px}.name-row{flex-direction:column}.tree{opacity:.65}}
+</style>
+</head>
+<body>
+<div class="game">
+ <div class="sky-decor"><div class="sun"></div><div class="cloud c1"></div><div class="cloud c2"></div><div class="tree left"></div><div class="tree right"></div></div>
+ <header class="topbar">
+  <div class="brand">🐦 BIRD HUNTER <span>– PEMBURU TARGET CERDAS</span></div>
+  <div class="stats"><div class="stat">👤 <span id="navName">Pemain</span></div><div class="stat">🏅 Level <span id="navLevel">1</span>/5</div><div class="stat">⭐ <span id="navScore">0</span></div><div class="stat">⏱️ <span id="navTime">30</span>s</div></div>
+ </header>
+ <main>
+  <section id="welcome" class="panel hero center">
+   <div class="mascot">🦜</div><h1>BIRD <em>HUNTER</em></h1>
+   <h2>Pemburu Target Cerdas</h2>
+   <p>Selamat datang di Taman Burung Ajaib! Bantu burung-burung menemukan jawaban pengurangan yang tepat. Bidik balon jawaban dan kumpulkan bintang!</p>
+   <div class="name-row"><input id="playerName" maxlength="18" placeholder="Masukkan nama pemain" aria-label="Nama pemain"><button class="btn" id="startBtn">MULAI MAIN ▶</button></div>
+   <div class="instructions"><span>👆 Mouse / layar sentuh</span><span>🤏 Pinch dengan telunjuk & ibu jari</span><span>⭐ Jawaban benar = 100 poin</span></div>
+  </section>
+
+  <section id="gameScreen" class="panel game-panel hidden">
+   <div class="question-line"><span class="level-pill" id="levelTitle">🌟 Level 1: Pemula</span><strong id="qCounter">Soal 1 dari 3</strong></div>
+   <div class="levels" id="levelDots"></div>
+   <div class="progress"><div id="progressBar"></div></div>
+   <div class="question" id="questionText"></div>
+   <p class="hint" id="questionHint">Pilih balon yang berisi jawaban benar!</p>
+   <div class="playfield" id="playfield">
+    <span class="bird" style="left:8%;top:15%">🐦</span><span class="bird b2" style="right:8%;top:22%">🕊️</span><span class="bird" style="left:45%;top:7%;font-size:30px">🐤</span>
+    <div class="reticle" id="reticle"></div>
+   </div>
+   <div class="feedback" id="feedback" aria-live="polite">Ayo pilih balon jawaban!</div>
+   <div class="controls"><button class="btn blue" id="cameraBtn">📷 Aktifkan Kamera</button><button class="btn small" id="stopCameraBtn" disabled>Matikan Kamera</button><button class="btn small" id="skipBtn" style="background:#e7f2f8;box-shadow:0 4px 0 #c2dce9;color:#315a70">Lewati soal</button></div>
+   <div class="camera-box"><video id="cameraVideo" autoplay playsinline muted></video><div class="camera-status" id="cameraStatus">Kamera belum aktif. Tekan “Aktifkan Kamera” untuk menggunakan kontrol gesture. Kamu juga bisa memilih balon dengan mouse atau sentuhan.</div></div>
+  </section>
+
+  <section id="resultScreen" class="panel hero center hidden">
+   <div class="result-emoji" id="resultEmoji">🏆</div><h1>HEBAT SEKALI!</h1>
+   <h2 id="resultGreeting">Kamu berhasil!</h2><div class="result-score" id="finalScore">0</div><p id="resultMessage"></p>
+   <button class="btn" id="restartBtn">🔄 Main Lagi</button>
+  </section>
+ </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js" crossorigin="anonymous"></script>
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const levels = [
+ {name:"Pemula",qs:[
+  {type:"LOTS",q:"Ada 5 apel di meja. Dimakan 2 apel. Berapa apel yang tersisa?",a:3,opts:[3,2,4],why:"Lima dikurangi dua sama dengan tiga. Jadi, tersisa 3 apel."},
+  {type:"MOTS",q:"Rani punya 7 pensil. Ia memberikan 3 kepada adik. Berapa pensil Rani sekarang?",a:4,opts:[5,4,3],why:"Mulai dari 7, mundur 3 langkah: 6, 5, 4. Jawabannya 4 pensil."},
+  {type:"HOTS",q:"Di taman ada 6 burung. Lalu 2 burung terbang pergi. Apakah jumlah burung menjadi lebih banyak atau lebih sedikit, dan berapa sisanya?",a:4,opts:[4,6,8],why:"Burung yang pergi membuat jumlahnya berkurang. 6 − 2 = 4 burung."}]},
+ {name:"Penjelajah",qs:[
+  {type:"LOTS",q:"Hitung hasil 8 − 3 = ...",a:5,opts:[5,6,4],why:"Delapan dikurangi tiga sama dengan lima."},
+  {type:"MOTS",q:"Bima memiliki 9 kelereng. Ia kehilangan 4 kelereng. Berapa kelereng yang masih ada?",a:5,opts:[4,5,6],why:"9 − 4 = 5. Jadi, masih ada 5 kelereng."},
+  {type:"HOTS",q:"Ada 10 ikan kecil. Sebanyak 3 bersembunyi di batu dan 2 bersembunyi di tanaman. Berapa ikan yang masih terlihat?",a:5,opts:[7,5,6],why:"Yang bersembunyi ada 3 + 2 = 5. Ikan terlihat: 10 − 5 = 5."}]},
+ {name:"Pintar",qs:[
+  {type:"LOTS",q:"Berapakah hasil 12 − 2?",a:10,opts:[9,10,11],why:"Dua belas dikurangi dua sama dengan sepuluh."},
+  {type:"MOTS",q:"Di keranjang ada 14 jeruk. Ibu mengambil 5 jeruk. Berapa jeruk yang tersisa?",a:9,opts:[8,9,10],why:"14 − 5 = 9. Jadi, tersisa 9 jeruk."},
+  {type:"HOTS",q:"Dina punya 13 stiker. Ia memberikan beberapa stiker dan kini tersisa 8. Berapa stiker yang diberikan Dina?",a:5,opts:[4,5,6],why:"Cari angka yang membuat 13 − ... = 8. Karena 13 − 5 = 8, Dina memberi 5 stiker."}]},
+ {name:"Ahli",qs:[
+  {type:"LOTS",q:"Hitunglah 15 − 4 = ...",a:11,opts:[10,11,12],why:"Lima belas dikurangi empat sama dengan sebelas."},
+  {type:"MOTS",q:"Ada 17 bunga di taman. Sebanyak 6 bunga dipetik. Berapa bunga yang masih ada?",a:11,opts:[11,12,10],why:"17 − 6 = 11. Masih ada 11 bunga."},
+  {type:"HOTS",q:"Kakak memiliki 16 kartu. Adik memiliki 9 kartu. Berapa lebih banyak kartu Kakak daripada Adik?",a:7,opts:[6,7,8],why:"Untuk mencari selisih, kurangkan 16 − 9 = 7 kartu."}]},
+ {name:"Juara Taman",qs:[
+  {type:"LOTS",q:"Berapakah hasil 18 − 5?",a:13,opts:[12,13,14],why:"Delapan belas dikurangi lima sama dengan tiga belas."},
+  {type:"MOTS",q:"Pak Tani memanen 20 wortel. Sebanyak 8 wortel diberikan kepada tetangga. Berapa wortel yang tersisa?",a:12,opts:[11,12,13],why:"20 − 8 = 12. Tersisa 12 wortel."},
+  {type:"HOTS",q:"Ada 19 burung di dua pohon. Sebanyak 7 burung pindah ke pohon lain. Lalu 3 burung lagi terbang pergi. Berapa burung yang masih di pohon pertama?",a:9,opts:[8,9,10],why:"Kurangi secara bertahap: 19 − 7 = 12, lalu 12 − 3 = 9 burung."}]}
+];
+let player="Pemain",score=0,level=0,qIndex=0,timeLeft=30,timer=null,locked=false,answered=0,camera=null,hands=null,cameraOn=false,frameLoop=0,pinchWasDown=false,lastPinch=0,audioCtx=null;
+const levelNames=["Pemula","Penjelajah","Pintar","Ahli","Juara Taman"];
+function sound(freq=520,duration=.12,type="sine"){try{audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();let o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(.12,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+duration);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+duration)}catch(e){}}
+function show(id){["welcome","gameScreen","resultScreen"].forEach(x=>$(x).classList.toggle("hidden",x!==id))}
+function updateNav(){$("navName").textContent=player;$("navLevel").textContent=level+1;$("navScore").textContent=score;$("navTime").textContent=timeLeft}
+function drawDots(){$("levelDots").innerHTML=levels.map((l,i)=>`<span class="level-dot ${i<level?"done":i===level?"current":""}">${i<level?"✓":"★"} ${i+1}</span>`).join("")}
+function start(){player=$("playerName").value.trim()||"Pemain";score=0;level=0;qIndex=0;answered=0;show("gameScreen");updateNav();drawDots();loadQuestion()}
+function loadQuestion(){
+ if(level>=5){finish();return}
+ if(qIndex>=3){level++;qIndex=0;if(level>=5){finish();return}drawDots()}
+ const q=levels[level].qs[qIndex];locked=false;timeLeft=30;updateNav();
+ $("levelTitle").textContent=`🌟 Level ${level+1}: ${levels[level].name}`;$("qCounter").textContent=`Soal ${qIndex+1} dari 3 · ${q.type}`;
+ $("questionText").textContent=q.q;$("questionHint").textContent="Pilih balon yang berisi jawaban benar!";
+ $("feedback").className="feedback";$("feedback").textContent="Ayo pilih balon jawaban!";
+ $("progressBar").style.width=`${((level*3+qIndex)/15)*100}%`;
+ const field=$("playfield");field.querySelectorAll(".balloon").forEach(x=>x.remove());
+ let opts=[...q.opts].sort(()=>Math.random()-.5);
+ const positions=[[14,40],[43,48],[71,38]];
+ opts.forEach((v,i)=>{let b=document.createElement("button");b.className=`balloon ${["b1","b2c","b3c","b4c"][i]}`;b.textContent=v;b.style.left=positions[i][0]+"%";b.style.top=positions[i][1]+"%";b.setAttribute("aria-label","Jawaban "+v);b.addEventListener("click",()=>choose(v,b));field.appendChild(b)});
+ clearInterval(timer);timer=setInterval(()=>{if(locked)return;timeLeft--;updateNav();if(timeLeft<=0){clearInterval(timer);resolve(null,null,true)}},1000);
+}
+function choose(value,el){if(locked)return;sound(620,.08,"triangle");resolve(value,el,false)}
+function resolve(value,el,timeout){
+ if(locked)return;locked=true;clearInterval(timer);let q=levels[level].qs[qIndex],correct=value===q.a;
+ if(correct){score+=100;answered++;$("feedback").className="feedback";$("feedback").textContent="🎉 Hebat, "+player+"! Jawaban benar. "+q.why;sound(880,.18);if(el){el.classList.add("popped");burst(el)}}
+ else{$("feedback").className="feedback bad";$("feedback").textContent=(timeout?"⏰ Waktu habis. ":"Belum tepat, tidak apa-apa! ")+q.why;sound(210,.2,"sawtooth");if(el)el.classList.add("popped")}
+ updateNav();$("progressBar").style.width=`${((level*3+qIndex+1)/15)*100}%`;
+ $("playfield").querySelectorAll(".balloon").forEach(b=>{if(Number(b.textContent)===q.a)b.style.outline="4px solid #43d58d"});
+ setTimeout(()=>{qIndex++;loadQuestion()},2300);
+}
+function burst(el){let r=el.getBoundingClientRect();for(let i=0;i<8;i++){let s=document.createElement("span");s.textContent=["✨","⭐","💫"][i%3];s.style.cssText=`position:fixed;left:${r.left+r.width/2}px;top:${r.top+r.height/2}px;z-index:99;pointer-events:none;font-size:20px;transition:all .6s ease;`;document.body.appendChild(s);requestAnimationFrame(()=>{s.style.transform=`translate(${Math.cos(i*Math.PI/4)*65}px,${Math.sin(i*Math.PI/4)*65}px) scale(.3)`;s.style.opacity=0});setTimeout(()=>s.remove(),700)}}
+function finish(){clearInterval(timer);stopCamera();show("resultScreen");$("resultGreeting").textContent=`Terima kasih sudah bermain, ${player}!`;$("finalScore").textContent=score+" POIN";$("resultEmoji").textContent=score>=1200?"🏆":score>=700?"🌟":"🐦";$("resultMessage").textContent=score>=1200?"Luar biasa! Kamu adalah Penjaga Taman Burung terbaik!":score>=700?"Kerja bagus! Terus berlatih pengurangan, ya!":"Terima kasih sudah mencoba! Setiap latihan membuatmu makin pintar."; }
+function stopCamera(){if(camera){camera.stop?.();camera=null}if(frameLoop){cancelAnimationFrame(frameLoop);frameLoop=0}if(hands){hands.close();hands=null}let v=$("cameraVideo");if(v.srcObject){v.srcObject.getTracks().forEach(t=>t.stop());v.srcObject=null}cameraOn=false;$("stopCameraBtn").disabled=true;$("cameraBtn").disabled=false;$("cameraStatus").textContent="Kamera mati. Kamu tetap bisa bermain dengan mouse atau sentuhan.";$("reticle").style.display="none"}
+async function startCamera(){
+ if(!navigator.mediaDevices?.getUserMedia){$("cameraStatus").textContent="Browser ini tidak mendukung kamera. Gunakan mouse atau sentuhan.";return}
+ if(!window.Hands||!window.Camera){$("cameraStatus").textContent="Pustaka gesture belum termuat. Periksa koneksi internet, lalu muat ulang halaman.";return}
+ try{
+  $("cameraBtn").disabled=true;$("cameraStatus").textContent="Meminta izin kamera...";
+  const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:640,height:480},audio:false});
+  const video=$("cameraVideo");video.srcObject=stream;await video.play();
+  hands=new Hands({locateFile:(file)=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${file}`});
+  hands.setOptions({maxNumHands:1,modelComplexity:1,minDetectionConfidence:.65,minTrackingConfidence:.6});
+  hands.onResults(onHands);
+  cameraOn=true;
+  const processFrame=async()=>{if(!cameraOn)return;if(hands&&video.readyState>=2){try{await hands.send({image:video})}catch(e){}}frameLoop=requestAnimationFrame(processFrame)};
+  processFrame();$("stopCameraBtn").disabled=false;$("cameraStatus").textContent="Kamera aktif! Tunjukkan satu tangan. Dekatkan ibu jari dan telunjuk (pinch) untuk memilih balon.";
+ }catch(err){$("cameraStatus").textContent="Kamera tidak dapat diaktifkan. Izinkan akses kamera dan gunakan HTTPS atau localhost. Mouse/sentuhan tetap tersedia.";stopCamera()}
+}
+function onHands(results){
+ const ret=$("reticle"),field=$("playfield"),rect=field.getBoundingClientRect();
+ if(!results.multiHandLandmarks||!results.multiHandLandmarks.length){ret.style.display="none";pinchWasDown=false;return}
+ const lm=results.multiHandLandmarks[0],tip=lm[8],thumb=lm[4],x=1-tip.x,y=tip.y;
+ const px=x*rect.width,py=y*rect.height;ret.style.display="block";ret.style.left=px+"px";ret.style.top=py+"px";
+ // Jarak ibu jari dan telunjuk yang kecil menandakan gesture pinch.
+ const d=Math.hypot(tip.x-thumb.x,tip.y-thumb.y),pinch=d<.055,now=Date.now();
+ if(pinch&&!pinchWasDown&&now-lastPinch>650){lastPinch=now;let target=document.elementFromPoint(rect.left+px,rect.top+py);let balloon=target?.closest(".balloon");if(balloon&&field.contains(balloon))choose(Number(balloon.textContent),balloon)}
+ pinchWasDown=pinch;
+}
+$("startBtn").addEventListener("click",start);$("playerName").addEventListener("keydown",e=>{if(e.key==="Enter")start()});
+$("cameraBtn").addEventListener("click",startCamera);$("stopCameraBtn").addEventListener("click",stopCamera);
+$("skipBtn").addEventListener("click",()=>{if(!locked)resolve(null,null,false)});
+$("restartBtn").addEventListener("click",()=>{stopCamera();show("welcome")});
+window.addEventListener("beforeunload",stopCamera);
+})();
+</script>
+</body>
+</html>
